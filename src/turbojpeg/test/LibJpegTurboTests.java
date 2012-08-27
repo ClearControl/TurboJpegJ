@@ -37,21 +37,26 @@ public class LibJpegTurboTests
 
 		lPointerToCLong.setCLong(lCompressedImage.capacity());
 
+		int ec = 0;
 		final StopWatch lCompressionTime = StopWatch.start();
-		final int ec = TurbojpegLibrary.tjCompress2(lPointerToCompressor,
-																								Pointer.pointerToBytes(lDmImage),
-																								512,
-																								512,
-																								1024,
-																								(int) TJPF.TJPF_GRAY.value,
-																								lPointerToPointer,
-																								lPointerToCLong,
-																								(int) TJSAMP.TJSAMP_GRAY.value,
-																								100,
-																								TurbojpegLibrary.TJFLAG_NOREALLOC | TurbojpegLibrary.TJFLAG_ACCURATEDCT);
+		final int lNumberOfRepeats = 1000;
+		for (int i = 0; i < lNumberOfRepeats; i++)
+		{
+			ec = TurbojpegLibrary.tjCompress2(lPointerToCompressor,
+																				Pointer.pointerToBytes(lDmImage),
+																				512,
+																				512,
+																				1024,
+																				(int) TJPF.TJPF_GRAY.value,
+																				lPointerToPointer,
+																				lPointerToCLong,
+																				(int) TJSAMP.TJSAMP_GRAY.value,
+																				90,
+																				TurbojpegLibrary.TJFLAG_NOREALLOC | TurbojpegLibrary.TJFLAG_FORCESSE3  | TurbojpegLibrary.TJFLAG_FASTDCT);
+		}
 		final long lCompressionElapsedTime = lCompressionTime.time(TimeUnit.MILLISECONDS);
 		System.out.format("Compression: %d ms \n",
-											lCompressionElapsedTime);
+											lCompressionElapsedTime / lNumberOfRepeats);
 
 		System.out.println(ec);
 
