@@ -18,75 +18,44 @@ public class TurboJpegJCompressor implements Closeable
 
 	private Pointer<?> mPointerToCompressor;
 
-	private int mWidth;
-	private int mHeight;
 	private ByteBuffer mCompressedImageByteBuffer;
 	private Pointer<Pointer<Byte>> mPointerToCompressedImageByteBufferPointer;
 	private Pointer<CLong> mPointerToCompressedBufferEffectiveSize;
 	private long mLastCompressionElapsedTimeInMs;
 
-	private int mQuality=100;
+	private int mQuality = 100;
 
 	public TurboJpegJCompressor()
 	{
 		super();
-
-	}
-
-	public void initialize(final int pWidth, final int pHeight)
-	{
-		if (mPointerToCompressor != null && (pWidth != mWidth || pHeight != mHeight))
-		{
-			try
-			{
-				close();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
-
-		mWidth = pWidth;
-		mHeight = pHeight;
-
 		mPointerToCompressor = TurbojpegLibrary.tjInitCompress();
-
-		mCompressedImageByteBuffer = ByteBuffer.allocateDirect(pWidth * pHeight);
-
-		mPointerToCompressedImageByteBufferPointer = Pointer.pointerToPointer(Pointer.pointerToBytes(mCompressedImageByteBuffer));
-
-		mPointerToCompressedBufferEffectiveSize = Pointer.allocateCLong();
-		mPointerToCompressedBufferEffectiveSize.setCLong(mCompressedImageByteBuffer.capacity());
-
 	}
 
 	@Override
 	public void close() throws IOException
 	{
-		if(mPointerToCompressor==null) return;
-		
-		TurbojpegLibrary.tjDestroy(mPointerToCompressor);
-		mPointerToCompressor=null;
-		mPointerToCompressedImageByteBufferPointer=null;
-		mPointerToCompressedBufferEffectiveSize.release();
-		mWidth=0;
-		mHeight=0;
-	}
-	
-	
+		if (mPointerToCompressor == null)
+			return;
 
-	public boolean compress(final ByteBuffer p8BitImageByteBuffer)
+		TurbojpegLibrary.tjDestroy(mPointerToCompressor);
+		mPointerToCompressor = null;
+		mPointerToCompressedImageByteBufferPointer = null;
+		mPointerToCompressedBufferEffectiveSize.release();
+
+	}
+
+	public boolean compressMonochrome(final int pWidth, final int pHeight, final ByteBuffer p8BitImageByteBuffer)
 	{
 		if (mPointerToCompressor == null)
 			return false;
-
+		allocateCompressedBuffer(p8BitImageByteBuffer.limit());
 		final StopWatch lCompressionTime = StopWatch.start();
+		p8BitImageByteBuffer.position(0);
 		final int lErrorCode = TurbojpegLibrary.tjCompress2(mPointerToCompressor,
 																												Pointer.pointerToBytes(p8BitImageByteBuffer),
-																												mWidth,
-																												mWidth,
-																												mHeight,
+																												pWidth,
+																												0,
+																												pHeight,
 																												(int) TJPF.TJPF_GRAY.value,
 																												mPointerToCompressedImageByteBufferPointer,
 																												mPointerToCompressedBufferEffectiveSize,
@@ -96,15 +65,32 @@ public class TurboJpegJCompressor implements Closeable
 																														| TurbojpegLibrary.TJFLAG_FASTDCT);
 		mLastCompressionElapsedTimeInMs = lCompressionTime.time(TimeUnit.MILLISECONDS);
 		mCompressedImageByteBuffer.limit((int) mPointerToCompressedBufferEffectiveSize.getCLong());
-		return lErrorCode > 0;
+		return lErrorCode == 0;
 
 	}
-	
+
+	private void allocateCompressedBuffer(final int pLength)
+	{
+		if (mCompressedImageByteBuffer != null && mCompressedImageByteBuffer.limit() == pLength)
+			return;
+
+		mCompressedImageByteBuffer = ByteBuffer.allocateDirect(pLength);
+
+		if (mPointerToCompressedImageByteBufferPointer != null)
+			mPointerToCompressedImageByteBufferPointer.release();
+		mPointerToCompressedImageByteBufferPointer = Pointer.pointerToPointer(Pointer.pointerToBytes(mCompressedImageByteBuffer));
+
+		if (mPointerToCompressedBufferEffectiveSize != null)
+			mPointerToCompressedBufferEffectiveSize.release();
+		mPointerToCompressedBufferEffectiveSize = Pointer.allocateCLong();
+		mPointerToCompressedBufferEffectiveSize.setCLong(mCompressedImageByteBuffer.capacity());
+	}
+
 	public ByteBuffer getCompressedBuffer()
 	{
 		return mCompressedImageByteBuffer;
 	}
-	
+
 	public int getLastImageCompressionElapsedTimeInMs()
 	{
 		return (int) mLastCompressionElapsedTimeInMs;

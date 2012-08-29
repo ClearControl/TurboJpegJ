@@ -29,21 +29,22 @@ public class TurboJpegJCompressorTest
 	@Test
 	public void test() throws IOException
 	{
-		TurboJpegJCompressor lTurboJpegJCompressor = new TurboJpegJCompressor ();
+		TurboJpegJCompressor lTurboJpegJCompressor = new TurboJpegJCompressor();
 		lTurboJpegJCompressor.setQuality(90);
 		ByteBuffer lByteBuffer = loadRawImage();
-		lTurboJpegJCompressor.initialize(512,1024);
-		lTurboJpegJCompressor.compress(lByteBuffer);
+		//for (int i = 0; i < 100; i++)
+			assertTrue(lTurboJpegJCompressor.compressMonochrome(549, 1080, lByteBuffer));
 		int lLimit = lTurboJpegJCompressor.getCompressedBuffer().limit();
-		assertTrue(lLimit>lByteBuffer.limit()*0.2);
-		assertTrue(lLimit<lByteBuffer.limit()*0.3);
+		final double lRatio = ((double)lLimit)/ lByteBuffer.limit();
+		System.out.format("lRatio=%g \n",lRatio);
+		assertTrue(lRatio<0.34);
 	}
 
 	private ByteBuffer loadRawImage() throws FileNotFoundException
 	{
 		try
 		{
-			final String lFileName = "dm.512x1024.8bit.raw";
+			final String lFileName = "dm.549x1080.8bit.raw";
 			final URL resourceLocation = TurboJpegJCompressorTest.class.getResource(lFileName);
 			if (resourceLocation == null)
 			{
