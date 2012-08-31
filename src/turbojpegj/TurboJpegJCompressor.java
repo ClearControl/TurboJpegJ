@@ -71,8 +71,10 @@ public class TurboJpegJCompressor implements Closeable
 
 	private void allocateCompressedBuffer(final int pLength)
 	{
-		if (mCompressedImageByteBuffer != null && mCompressedImageByteBuffer.limit() == pLength)
+		if (mCompressedImageByteBuffer != null && mCompressedImageByteBuffer.capacity() == pLength)
 			return;
+
+		System.out.println("TurboJpegJCompressor: Allocating new buffer for compressed image!");
 
 		mCompressedImageByteBuffer = ByteBuffer.allocateDirect(pLength);
 
