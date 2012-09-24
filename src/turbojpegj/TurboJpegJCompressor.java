@@ -19,9 +19,11 @@ public class TurboJpegJCompressor implements Closeable
 	private Pointer<?> mPointerToCompressor;
 
 	private ByteBuffer mCompressedImageByteBuffer;
+	private Pointer<Byte> mPointerTo8BitImageByteBuffer;
 	private Pointer<Pointer<Byte>> mPointerToCompressedImageByteBufferPointer;
 	private Pointer<CLong> mPointerToCompressedBufferEffectiveSize;
 	private long mLastCompressionElapsedTimeInMs;
+	private double mLastCompressionRatio;
 
 	private int mQuality = 100;
 
@@ -29,6 +31,8 @@ public class TurboJpegJCompressor implements Closeable
 	{
 		super();
 		mPointerToCompressor = TurbojpegLibrary.tjInitCompress();
+		mPointerToCompressedBufferEffectiveSize = Pointer.allocateCLong();
+		mPointerToCompressedImageByteBufferPointer = Pointer.allocatePointer(Byte.class);
 	}
 
 	@Override
@@ -44,15 +48,20 @@ public class TurboJpegJCompressor implements Closeable
 
 	}
 
-	public boolean compressMonochrome(final int pWidth, final int pHeight, final ByteBuffer p8BitImageByteBuffer)
+	public boolean compressMonochrome(final int pWidth,
+																		final int pHeight,
+																		final ByteBuffer p8BitImageByteBuffer)
 	{
 		if (mPointerToCompressor == null)
 			return false;
-		allocateCompressedBuffer(p8BitImageByteBuffer.limit());
+		allocateCompressedBuffer((int) (1.5 * p8BitImageByteBuffer.limit()));
 		final StopWatch lCompressionTime = StopWatch.start();
 		p8BitImageByteBuffer.position(0);
+
+		final Pointer lPointerTo8BitImageByteBuffer = Pointer.pointerToBytes(p8BitImageByteBuffer);
+
 		final int lErrorCode = TurbojpegLibrary.tjCompress2(mPointerToCompressor,
-																												Pointer.pointerToBytes(p8BitImageByteBuffer),
+																												lPointerTo8BitImageByteBuffer,
 																												pWidth,
 																												0,
 																												pHeight,
@@ -65,26 +74,29 @@ public class TurboJpegJCompressor implements Closeable
 																														| TurbojpegLibrary.TJFLAG_FASTDCT);
 		mLastCompressionElapsedTimeInMs = lCompressionTime.time(TimeUnit.MILLISECONDS);
 		mCompressedImageByteBuffer.limit((int) mPointerToCompressedBufferEffectiveSize.getCLong());
+		mLastCompressionRatio = ((double) mCompressedImageByteBuffer.limit()) / p8BitImageByteBuffer.limit();
+
+		lPointerTo8BitImageByteBuffer.release();
 		return lErrorCode == 0;
 
 	}
 
 	private void allocateCompressedBuffer(final int pLength)
 	{
-		if (mCompressedImageByteBuffer != null && mCompressedImageByteBuffer.capacity() == pLength)
+		if (mCompressedImageByteBuffer != null && mCompressedImageByteBuffer.capacity() >= pLength)
 			return;
 
 		System.out.println("TurboJpegJCompressor: Allocating new buffer for compressed image!");
 
 		mCompressedImageByteBuffer = ByteBuffer.allocateDirect(pLength);
 
-		if (mPointerToCompressedImageByteBufferPointer != null)
-			mPointerToCompressedImageByteBufferPointer.release();
-		mPointerToCompressedImageByteBufferPointer = Pointer.pointerToPointer(Pointer.pointerToBytes(mCompressedImageByteBuffer));
+		// if (mPointerToCompressedImageByteBufferPointer != null)
+		// mPointerToCompressedImageByteBufferPointer.release();
+		mPointerToCompressedImageByteBufferPointer.setPointer(Pointer.pointerToBytes(mCompressedImageByteBuffer));
 
-		if (mPointerToCompressedBufferEffectiveSize != null)
-			mPointerToCompressedBufferEffectiveSize.release();
-		mPointerToCompressedBufferEffectiveSize = Pointer.allocateCLong();
+		// if (mPointerToCompressedBufferEffectiveSize != null)
+		// mPointerToCompressedBufferEffectiveSize.release();
+
 		mPointerToCompressedBufferEffectiveSize.setCLong(mCompressedImageByteBuffer.capacity());
 	}
 
@@ -96,6 +108,11 @@ public class TurboJpegJCompressor implements Closeable
 	public int getLastImageCompressionElapsedTimeInMs()
 	{
 		return (int) mLastCompressionElapsedTimeInMs;
+	}
+
+	public double getLastCompressionRatio()
+	{
+		return mLastCompressionRatio;
 	}
 
 	public int getQuality()

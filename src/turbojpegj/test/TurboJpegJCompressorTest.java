@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.bridj.CLong;
@@ -22,6 +23,7 @@ import turbojpeg.TurbojpegLibrary.TJPF;
 import turbojpeg.TurbojpegLibrary.TJSAMP;
 import turbojpeg.utils.StopWatch;
 import turbojpegj.TurboJpegJCompressor;
+import turbojpegj.TurboJpegJDecompressor;
 
 public class TurboJpegJCompressorTest
 {
@@ -31,13 +33,44 @@ public class TurboJpegJCompressorTest
 	{
 		TurboJpegJCompressor lTurboJpegJCompressor = new TurboJpegJCompressor();
 		lTurboJpegJCompressor.setQuality(90);
-		ByteBuffer lByteBuffer = loadRawImage();
-		//for (int i = 0; i < 100; i++)
-			assertTrue(lTurboJpegJCompressor.compressMonochrome(549, 1080, lByteBuffer));
+		ByteBuffer lOriginalByteBuffer = loadRawImage();
+		// for (int i = 0; i < 100; i++)
+		assertTrue(lTurboJpegJCompressor.compressMonochrome(549,
+																												1080,
+																												lOriginalByteBuffer));
 		int lLimit = lTurboJpegJCompressor.getCompressedBuffer().limit();
-		final double lRatio = ((double)lLimit)/ lByteBuffer.limit();
-		System.out.format("lRatio=%g \n",lRatio);
-		assertTrue(lRatio<0.34);
+		final double lRatio = ((double) lLimit) / lOriginalByteBuffer.limit();
+		System.out.format("time=%d ms\n",
+											lTurboJpegJCompressor.getLastImageCompressionElapsedTimeInMs());
+		System.out.format("lRatio=%g \n", lRatio);
+		// assertTrue(lRatio < 0.34);
+
+		TurboJpegJDecompressor lTurboJpegJDecompressor = new TurboJpegJDecompressor();
+
+		assertTrue(lTurboJpegJDecompressor.decompressMonochrome(lTurboJpegJCompressor.getCompressedBuffer()));
+		System.out.format("time=%d ms\n",
+											lTurboJpegJCompressor.getLastImageCompressionElapsedTimeInMs());
+
+		ByteBuffer lDecompressedBuffer = lTurboJpegJDecompressor.getDecompressedBuffer();
+
+		assertTrue(lDecompressedBuffer.limit() == lOriginalByteBuffer.limit());
+
+		double[] lHistogram = new double[256];
+
+		for (int i = 0; i < lDecompressedBuffer.limit(); i++)
+		{
+			final byte before = lOriginalByteBuffer.get(i);
+			final byte after = lDecompressedBuffer.get(i);
+			//System.out.format("%d <-> %d \n", before, after);
+
+			final int lDifference = Math.abs(after - before);
+
+			lHistogram[lDifference]++;
+		}
+
+		System.out.println(Arrays.toString(lHistogram));
+
+		assertTrue(lDecompressedBuffer.equals(lOriginalByteBuffer));
 	}
 
 	private ByteBuffer loadRawImage() throws FileNotFoundException
