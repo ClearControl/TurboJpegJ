@@ -120,9 +120,14 @@ public class TurboJpegJCompressor implements Closeable
 		return mQuality;
 	}
 
-	public void setQuality(int quality)
+	public void setQuality(int pQuality)
 	{
-		mQuality = quality;
+		pQuality = Double.isNaN(pQuality)?50:pQuality;
+		pQuality = Double.isInfinite(pQuality)?50:pQuality;
+		pQuality = pQuality<0?0:pQuality;
+		pQuality = pQuality>100?100:pQuality;
+		
+		mQuality = pQuality;
 	}
 
 }
