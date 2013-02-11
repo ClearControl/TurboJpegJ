@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +62,7 @@ public class TurboJpegJCompressorTest
 		{
 			final byte before = lOriginalByteBuffer.get(i);
 			final byte after = lDecompressedBuffer.get(i);
-			//System.out.format("%d <-> %d \n", before, after);
+			// System.out.format("%d <-> %d \n", before, after);
 
 			final int lDifference = Math.abs(after - before);
 
@@ -86,7 +87,8 @@ public class TurboJpegJCompressorTest
 			final File myFile = new File(resourceLocation.toURI());
 			final FileInputStream lFileInputStream = new FileInputStream(myFile);
 			final FileChannel lChannel = lFileInputStream.getChannel();
-			final ByteBuffer lByteBuffer = ByteBuffer.allocateDirect((int) lChannel.size());
+			final ByteBuffer lByteBuffer = ByteBuffer.allocateDirect((int) lChannel.size())
+																								.order(ByteOrder.nativeOrder());
 			lChannel.read(lByteBuffer);
 			lFileInputStream.close();
 			return lByteBuffer;

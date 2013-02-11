@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +28,8 @@ public class LibJpegTurboTests
 	public void testDMImage() throws IOException
 	{
 		final ByteBuffer lDmImage = loadRawImage();
-		final ByteBuffer lCompressedImage = ByteBuffer.allocateDirect(512 * 1024);
+		final ByteBuffer lCompressedImage = ByteBuffer.allocateDirect(512 * 1024)
+																									.order(ByteOrder.nativeOrder());
 
 		final Pointer<Pointer<Byte>> lPointerToPointer = Pointer.pointerToPointer(Pointer.pointerToBytes(lCompressedImage));
 
@@ -52,7 +54,8 @@ public class LibJpegTurboTests
 																				lPointerToCLong,
 																				(int) TJSAMP.TJSAMP_GRAY.value,
 																				90,
-																				TurbojpegLibrary.TJFLAG_NOREALLOC | TurbojpegLibrary.TJFLAG_FORCESSE3  | TurbojpegLibrary.TJFLAG_FASTDCT);
+																				TurbojpegLibrary.TJFLAG_NOREALLOC | TurbojpegLibrary.TJFLAG_FORCESSE3
+																						| TurbojpegLibrary.TJFLAG_FASTDCT);
 		}
 		final long lCompressionElapsedTime = lCompressionTime.time(TimeUnit.MILLISECONDS);
 		System.out.format("Compression: %d ms \n",
@@ -66,7 +69,8 @@ public class LibJpegTurboTests
 
 		System.out.format("Compression ratio: %g  \n", ratio);
 
-		final ByteBuffer lDmImageDecompressed = ByteBuffer.allocateDirect(lDmImage.limit());
+		final ByteBuffer lDmImageDecompressed = ByteBuffer.allocateDirect(lDmImage.limit())
+																											.order(ByteOrder.nativeOrder());
 
 		final Pointer<?> lPointerToDecompressor = TurbojpegLibrary.tjInitDecompress();
 
@@ -120,7 +124,8 @@ public class LibJpegTurboTests
 			final File myFile = new File(resourceLocation.toURI());
 			final FileInputStream lFileInputStream = new FileInputStream(myFile);
 			final FileChannel lChannel = lFileInputStream.getChannel();
-			final ByteBuffer lByteBuffer = ByteBuffer.allocateDirect((int) lChannel.size());
+			final ByteBuffer lByteBuffer = ByteBuffer.allocateDirect((int) lChannel.size())
+																								.order(ByteOrder.nativeOrder());
 			lChannel.read(lByteBuffer);
 			lFileInputStream.close();
 			return lByteBuffer;

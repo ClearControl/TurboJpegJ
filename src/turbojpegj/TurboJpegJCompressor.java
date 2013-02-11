@@ -3,6 +3,7 @@ package turbojpegj;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
 
 import org.bridj.CLong;
@@ -88,7 +89,7 @@ public class TurboJpegJCompressor implements Closeable
 
 		System.out.println("TurboJpegJCompressor: Allocating new buffer for compressed image!");
 
-		mCompressedImageByteBuffer = ByteBuffer.allocateDirect(pLength);
+		mCompressedImageByteBuffer = ByteBuffer.allocateDirect(pLength).order(ByteOrder.nativeOrder());
 
 		// if (mPointerToCompressedImageByteBufferPointer != null)
 		// mPointerToCompressedImageByteBufferPointer.release();
@@ -96,7 +97,6 @@ public class TurboJpegJCompressor implements Closeable
 
 		// if (mPointerToCompressedBufferEffectiveSize != null)
 		// mPointerToCompressedBufferEffectiveSize.release();
-
 		mPointerToCompressedBufferEffectiveSize.setCLong(mCompressedImageByteBuffer.capacity());
 	}
 
