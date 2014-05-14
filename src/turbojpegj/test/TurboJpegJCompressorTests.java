@@ -1,32 +1,23 @@
 package turbojpegj.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
-import org.bridj.CLong;
-import org.bridj.Pointer;
 import org.junit.Test;
 
-import turbojpeg.TurbojpegLibrary;
-import turbojpeg.TurbojpegLibrary.TJPF;
-import turbojpeg.TurbojpegLibrary.TJSAMP;
-import turbojpeg.utils.StopWatch;
 import turbojpegj.TurboJpegJCompressor;
 import turbojpegj.TurboJpegJDecompressor;
 
-public class TurboJpegJCompressorTest
+public class TurboJpegJCompressorTests
 {
 
 	@Test
@@ -69,9 +60,12 @@ public class TurboJpegJCompressorTest
 			lHistogram[lDifference]++;
 		}
 
-		System.out.println(Arrays.toString(lHistogram));
+		// System.out.println(Arrays.toString(lHistogram));
 
-		assertTrue(lDecompressedBuffer.equals(lOriginalByteBuffer));
+		for (int i = 20; i < 236; i++)
+		{
+			assertTrue(lHistogram[i] == 0);
+		}
 	}
 
 	private ByteBuffer loadRawImage() throws FileNotFoundException
@@ -79,7 +73,7 @@ public class TurboJpegJCompressorTest
 		try
 		{
 			final String lFileName = "dm.549x1080.8bit.raw";
-			final URL resourceLocation = TurboJpegJCompressorTest.class.getResource(lFileName);
+			final URL resourceLocation = TurboJpegJCompressorTests.class.getResource(lFileName);
 			if (resourceLocation == null)
 			{
 				throw new FileNotFoundException(lFileName);

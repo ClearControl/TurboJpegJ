@@ -25,7 +25,7 @@ public class LibJpegTurboTests
 {
 
 	@Test
-	public void testDMImage() throws IOException
+	public void testCompressDecompress() throws IOException
 	{
 		final ByteBuffer lDmImage = loadRawImage();
 		final ByteBuffer lCompressedImage = ByteBuffer.allocateDirect(512 * 1024)
@@ -104,11 +104,14 @@ public class LibJpegTurboTests
 		}
 		System.out.format("number of differences: %d \n", counter);
 
-		final FileOutputStream lFileOutputStream = new FileOutputStream("out.raw");
+		File lTempFile = File.createTempFile(	this.getClass()
+																							.getSimpleName(),
+																					"testCompressDecompress");
+		final FileOutputStream lFileOutputStream = new FileOutputStream(lTempFile);
 		final FileChannel lChannel = lFileOutputStream.getChannel();
 		lChannel.write(lDmImageDecompressed);
 		lChannel.force(false);
-		lChannel.close();
+		lFileOutputStream.close();
 	}
 
 	private ByteBuffer loadRawImage() throws FileNotFoundException
