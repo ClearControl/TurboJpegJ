@@ -1,6 +1,7 @@
-bin
-build
+bin/
+build/
 .gradle
+.settings/*
 *.class
 out.raw
 .DS_Store
