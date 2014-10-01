@@ -1,7 +1,8 @@
 bin/
 build/
 .gradle
-.settings/*
+/.settings/*
+.classpath
 *.class
 out.raw
 .DS_Store
