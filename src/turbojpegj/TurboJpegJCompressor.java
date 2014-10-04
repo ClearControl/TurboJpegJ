@@ -1,6 +1,5 @@
 package turbojpegj;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -14,7 +13,7 @@ import turbojpeg.TurbojpegLibrary.TJPF;
 import turbojpeg.TurbojpegLibrary.TJSAMP;
 import turbojpeg.utils.StopWatch;
 
-public class TurboJpegJCompressor implements Closeable
+public class TurboJpegJCompressor implements AutoCloseable
 {
 
 	private Pointer<?> mPointerToCompressor;

@@ -1,20 +1,17 @@
 package turbojpegj;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
 
-import org.bridj.CLong;
 import org.bridj.Pointer;
 
 import turbojpeg.TurbojpegLibrary;
 import turbojpeg.TurbojpegLibrary.TJPF;
-import turbojpeg.TurbojpegLibrary.TJSAMP;
 import turbojpeg.utils.StopWatch;
 
-public class TurboJpegJDecompressor implements Closeable
+public class TurboJpegJDecompressor implements AutoCloseable
 {
 
 	private Pointer<?> mPointerToDecompressor;
