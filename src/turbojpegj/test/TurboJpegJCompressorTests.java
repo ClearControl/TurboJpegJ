@@ -23,31 +23,31 @@ public class TurboJpegJCompressorTests
 	@Test
 	public void test() throws IOException
 	{
-		TurboJpegJCompressor lTurboJpegJCompressor = new TurboJpegJCompressor();
+		final TurboJpegJCompressor lTurboJpegJCompressor = new TurboJpegJCompressor();
 		lTurboJpegJCompressor.setQuality(90);
-		ByteBuffer lOriginalByteBuffer = loadRawImage();
+		final ByteBuffer lOriginalByteBuffer = loadRawImage();
 		// for (int i = 0; i < 100; i++)
 		assertTrue(lTurboJpegJCompressor.compressMonochrome(549,
 																												1080,
 																												lOriginalByteBuffer));
-		int lLimit = lTurboJpegJCompressor.getCompressedBuffer().limit();
+		final int lLimit = lTurboJpegJCompressor.getCompressedBuffer().limit();
 		final double lRatio = ((double) lLimit) / lOriginalByteBuffer.limit();
 		System.out.format("time=%d ms\n",
 											lTurboJpegJCompressor.getLastImageCompressionElapsedTimeInMs());
 		System.out.format("lRatio=%g \n", lRatio);
 		// assertTrue(lRatio < 0.34);
 
-		TurboJpegJDecompressor lTurboJpegJDecompressor = new TurboJpegJDecompressor();
+		final TurboJpegJDecompressor lTurboJpegJDecompressor = new TurboJpegJDecompressor();
 
 		assertTrue(lTurboJpegJDecompressor.decompressMonochrome(lTurboJpegJCompressor.getCompressedBuffer()));
 		System.out.format("time=%d ms\n",
 											lTurboJpegJCompressor.getLastImageCompressionElapsedTimeInMs());
 
-		ByteBuffer lDecompressedBuffer = lTurboJpegJDecompressor.getDecompressedBuffer();
+		final ByteBuffer lDecompressedBuffer = lTurboJpegJDecompressor.getDecompressedBuffer();
 
 		assertTrue(lDecompressedBuffer.limit() == lOriginalByteBuffer.limit());
 
-		double[] lHistogram = new double[256];
+		final double[] lHistogram = new double[256];
 
 		for (int i = 0; i < lDecompressedBuffer.limit(); i++)
 		{
@@ -93,7 +93,6 @@ public class TurboJpegJCompressorTests
 		}
 		catch (final IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;

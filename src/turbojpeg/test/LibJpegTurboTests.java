@@ -104,7 +104,7 @@ public class LibJpegTurboTests
 		}
 		System.out.format("number of differences: %d \n", counter);
 
-		File lTempFile = File.createTempFile(	this.getClass()
+		final File lTempFile = File.createTempFile(	this.getClass()
 																							.getSimpleName(),
 																					"testCompressDecompress");
 		final FileOutputStream lFileOutputStream = new FileOutputStream(lTempFile);
@@ -139,7 +139,6 @@ public class LibJpegTurboTests
 		}
 		catch (final IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
